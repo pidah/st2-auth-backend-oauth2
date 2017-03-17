@@ -1,0 +1,3 @@
+requests
+oauthlib
+requests_oauthlib
