@@ -14,45 +14,36 @@
 # limitations under the License.
 
 import sys
-import httplib
 
 import unittest2
 import mock
-from requests.models import Response
-
-from st2auth_keystone_backend.keystone import KeystoneAuthenticationBackend
+from st2auth_oauth2_backend.oauth2 import Oauth2AuthenticationBackend
 
 
-class KeystoneAuthenticationBackendTestCase(unittest2.TestCase):
-    def _mock_keystone(self, *args, **kwargs):
-        return_codes = {
-            'goodv2': httplib.OK,
-            'goodv3': httplib.CREATED,
-            'bad': httplib.UNAUTHORIZED
-        }
-        json = kwargs.get('json')
-        res = Response()
-        try:
-            # v2
-            res.status_code = return_codes[json['auth']['passwordCredentials']['username']]
-        except KeyError:
-            # v3
-            res.status_code = return_codes[json['auth']['identity']['password']['user']['name']]
-        return res
+def _mock_fetch_token(**kwargs):
+    access_token = {"access_token": "asdfoiw37850234lkjsdfsdf"}
 
-    @mock.patch('requests.post', side_effect=_mock_keystone)
+    if kwargs['username'] == 'good' and kwargs['password'] == 'password':
+        return access_token
+
+
+class Oauth2AuthenticationBackendTestCase(unittest2.TestCase):
+
+    @mock.patch(
+        'st2auth_oauth2_backend.oauth2.OAuth2Session.fetch_token',
+        side_effect=_mock_fetch_token)
     def test_authenticate(self, mock_post):
-        backendv2 = KeystoneAuthenticationBackend(keystone_url="http://fake.com:5000",
-                                                  keystone_version=2)
-        backendv3 = KeystoneAuthenticationBackend(keystone_url="http://fake.com:5000",
-                                                  keystone_version=3)
+        backend = Oauth2AuthenticationBackend(
+            token_url="http://fakeidentityprovider.com:8080/token",
+            client_id="demo",
+            client_secret="1a9ada23-d527-46eb-9230-d068ac3bc161")
 
-        # good users
-        self.assertTrue(backendv2.authenticate('goodv2', 'password'))
-        self.assertTrue(backendv3.authenticate('goodv3', 'password'))
-        # bad ones
-        self.assertFalse(backendv2.authenticate('bad', 'password'))
-        self.assertFalse(backendv3.authenticate('bad', 'password'))
+        # good users and wrong password
+        self.assertEqual(backend.authenticate('good', 'badpassword'), False)
+        # good users and correct password
+        self.assertEqual(backend.authenticate('good', 'password'), True)
+        # bad users
+        self.assertEqual(backend.authenticate('bad', 'badpassword'), False)
 
 if __name__ == '__main__':
     sys.exit(unittest2.main())

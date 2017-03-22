@@ -15,9 +15,7 @@
 # limitations under the License.
 
 import logging
-import httplib
 
-import requests
 import os
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
@@ -33,10 +31,13 @@ class Oauth2AuthenticationBackend(object):
     """
     Backend which connects to an Oauth2/OpeniD Connect Identitiy provider.
 
-    Note: This backend depends on the "requests" and "oauthlib" library.
+    This backend depends on the "requests", "oauthlib" and "requests_oauthlib libraries.
+
+    **NOTE**: This oauth2 backend ONLY supports the  `Resource Owner Password Credential Grant` as specified in https://tools.ietf.org/html/rfc6749
+
     """
 
-    def __init__(self, token_url, client_id, client_secret):
+    def __init__(self, token_url, client_id, client_secret=""):
         """
         :param token_url: token endpoint url for the Oauth2/OpenID connect Identity Provider.
         :type token_url: ``str``
@@ -48,12 +49,11 @@ class Oauth2AuthenticationBackend(object):
     def authenticate(self, username, password):
 
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-        oauth = OAuth2Session(
-            client=LegacyApplicationClient(
-                client_id=self._client_id))
 
         try:
-            token = oauth.fetch_token(
+            token = OAuth2Session(
+                client=LegacyApplicationClient(
+                    client_id=self._client_id)).fetch_token(
                 token_url=self._token_url,
                 username=username,
                 password=password,
@@ -64,9 +64,11 @@ class Oauth2AuthenticationBackend(object):
                 'Authentication for user "{}" failed: {}'.format(
                     username, str(e)))
             return False
-        else:
+        if token is not None:
             LOG.info('Authentication for user "{}" successful'.format(username))
             return True
+
+        return False
 
     def get_user(self, username):
         pass
