@@ -1,23 +1,27 @@
 # Oauth2 authentication plugin for StackStorm Community edition
 
+**NOTE**: This oauth2 backend __ONLY__ supports the  `Resource Owner Password Credential Grant` as specified in https://tools.ietf.org/html/rfc6749
+
+
 ### Configuration Options
 
 | option           | required | default | description                                              |
 |------------------|----------|---------|----------------------------------------------------------|
-| token_url     | yes      |         | Oauth2 token endpoint url (i.e. "http://example.com:5000")     |
+| token_url     | yes      |         |Oauth2 token endpoint url (i.e."http://example.com:5000/token") |
+| client_id     | yes      |         |client_id for the client obtained from the Identity Provider    |
+| client_secret | yes      |         |client_secret for the client obtained from the Identity Provider|
 
 ### Configuration Example
 
 Please refer to the authentication section in the StackStorm
 [documentation](http://docs.stackstorm.com) for basic setup concept. The
-following is an example of the auth section in the StackStorm configuration file for the flat-file
-backend.
+following is an example of the auth section in the StackStorm configuration file for the oauth2 backend:
 
 ```
 [auth]
 mode = standalone
 backend = oauth2
-backend_kwargs = {"token_url": "http://identity.example.com:5000/"}
+backend_kwargs = {"token_url": "http://example.com:5000/token", "client_id": "demo", "client_secret": "1a9ada23-d527-46eb-9230-d068ac3bc161"}
 enable = True
 use_ssl = True
 cert = /path/to/ssl/cert/file
