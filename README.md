@@ -31,6 +31,10 @@ api_url = https://myhost.example.com:9101
 debug = False
 ```
 
+### Oauth2 Identity Provider Server
+
+To validate this Oauth2 backend, you can use the the following Identity Provider which supports Resource Owner Password Credentials Grant – https://github.com/brunsgaard/yoloAPI
+
 ## Copyright, License, and Contributors Agreement
 
 Copyright 2015 StackStorm, Inc.
