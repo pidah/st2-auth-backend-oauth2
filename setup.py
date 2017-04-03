@@ -58,6 +58,7 @@ setup(
     include_package_data=True,
     install_requires=install_reqs,
     dependency_links=dep_links,
+    test_suite='tests',
     entry_points={
         'st2auth.backends.backend': [
             'oauth2 = st2auth_oauth2_backend.oauth2:Oauth2AuthenticationBackend',
