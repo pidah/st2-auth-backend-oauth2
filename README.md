@@ -33,7 +33,24 @@ debug = False
 
 ### Oauth2 Identity Provider Server
 
-To validate this Oauth2 backend, you can use the the following Identity Provider which supports Resource Owner Password Credentials Grant – https://github.com/brunsgaard/yoloAPI
+To validate this Oauth2 backend, you can use the the following Identity Provider https://github.com/pidah/yoloAPI/ which supports Resource Owner Password Credentials Grant. This provider is based on https://github.com/brunsgaard/yoloAPI.
+
+### Tests
+
+To run both unit and integration tests:
+
+```
+pip install -r test-requirements.txt
+
+python setup.py test
+```
+or 
+
+```
+python -m  unittest discover
+```
+
+
 
 ## Copyright, License, and Contributors Agreement
 
