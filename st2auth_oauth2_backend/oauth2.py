@@ -19,6 +19,7 @@ import logging
 import os
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
+from passlib.apache import HtpasswdFile
 
 __all__ = [
     'Oauth2AuthenticationBackend'
@@ -37,7 +38,13 @@ class Oauth2AuthenticationBackend(object):
 
     """
 
-    def __init__(self, token_url, client_id, client_secret=""):
+    def __init__(
+            self,
+            token_url,
+            client_id,
+            client_secret="",
+            exclude_list=None,
+            file_path=None):
         """
         :param token_url: token endpoint url for the Oauth2/OpenID connect Identity Provider.
         :type token_url: ``str``
@@ -45,15 +52,33 @@ class Oauth2AuthenticationBackend(object):
         self._token_url = token_url
         self._client_id = client_id
         self._client_secret = client_secret
+        self._exclude_list = exclude_list
+        self._file_path = file_path
 
     def authenticate(self, username, password):
 
+        if username in self._exclude_list:
+            htpasswd_file = HtpasswdFile(path=self._file_path)
+            result = htpasswd_file.check_password(username, password)
+
+            if result is None:
+                LOG.info('User "%s" doesn\'t exist' % (username))
+            elif result is False:
+                LOG.info('Invalid password for user "%s"' % (username))
+            elif result is True:
+                LOG.info(
+                    'Authentication for user "%s" successful' %
+                    (username))
+
+            return bool(result)
+
         os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+        oauth = OAuth2Session(
+            client=LegacyApplicationClient(
+                client_id=self._client_id))
 
         try:
-            token = OAuth2Session(
-                client=LegacyApplicationClient(
-                    client_id=self._client_id)).fetch_token(
+            token = oauth.fetch_token(
                 token_url=self._token_url,
                 username=username,
                 password=password,
