@@ -83,7 +83,8 @@ class Oauth2AuthenticationBackend(object):
                 username=username,
                 password=password,
                 client_id=self._client_id,
-                client_secret=self._client_secret)
+                client_secret=self._client_secret,
+                verify=False)
         except Exception as e:
             LOG.info(
                 'Authentication for user "{}" failed: {}'.format(
